@@ -23,6 +23,11 @@ namespace galaga
         bool hittable = true;
         int hittableCounter = 0;
 
+        //boss variables
+        Rectangle boss = new Rectangle(150, -300, 550, 300);
+        int bossSpeed = 3;
+        int bossHealth = 100;
+
         //movement variables
         bool ADown = false;
         bool DDown = false;
@@ -44,11 +49,10 @@ namespace galaga
 
         //round variables
         int score = 0;
-        int time = 0;
-        int round = 0;
-        int roundTimer = 1;
-        double timeClock = 1;
+        int round = 1;
+        double timeClock = -1;
         int timeClockCounter = 0;
+        int roundStartTimer = 0;
 
         //enemy variables
         
@@ -61,10 +65,15 @@ namespace galaga
         
         //soldier enemy
         List<Rectangle> soldierEnemy = new List<Rectangle>();
+        List<Rectangle> soldierLaser = new List<Rectangle>();
         List<int> soldierSpeeds = new List<int>();
         List<int> soldierHealth = new List<int>();
         int soldierXSize = 45;
         int soldierYSize = 47;
+        int soldierLaserXSize = 3;
+        int soldierLaserYSize = 8;
+        int soldierLaserSpeed = 7;
+        int soldierLaserCounter = 0;
 
         //chaser enemy
         List<Rectangle> chaserEnemy = new List<Rectangle>();
@@ -85,6 +94,8 @@ namespace galaga
         //paint tools
         SolidBrush whiteBrush = new SolidBrush(Color.White);
         SolidBrush greenBrush = new SolidBrush(Color.Green);
+        SolidBrush redBrush = new SolidBrush(Color.Red);
+
         Image playerImage1 = Properties.Resources.playerShip1;
         Image playerImage2 = Properties.Resources.playerShip2;
         Image playerImage3 = Properties.Resources.playerShip3;
@@ -92,6 +103,9 @@ namespace galaga
         Image soldierImage1 = Properties.Resources.soldierShip1;
         Image bomberImage1 = Properties.Resources.bomber1;
         Image chaserImage1 = Properties.Resources.chaserShip1;
+
+        Image bossImage1 = Properties.Resources.boss1;
+
         Image background = Properties.Resources.GameBackground;
         
         public Form1()
@@ -120,11 +134,12 @@ namespace galaga
 
             score = 0;
             playerHealth = 3;
+            round = 10;
 
             hero.X = 360;
             hero.Y = 520;
 
-            roundLabel.Text = "";
+            roundLabel.Text = "Round: 1";
             timeLabel.Text = "Time left: 30";
             scoreLabel.Text = "0";
 
@@ -336,9 +351,10 @@ namespace galaga
 
                 if (timeClockCounter == 20)
                 {
-                    timeClockCounter = 0;
+                   
 
                     timeClock -= 1;
+                    timeClockCounter = 0;
                     timeLabel.Text = $"Time left: {timeClock}";
                 }
                 
@@ -353,13 +369,24 @@ namespace galaga
                     timeLabel.Text = $"Time left: {timeClock}";
 
                     timeClock = 30;
+                    roundStartTimer = 1;
                 }
-                
+                if (roundStartTimer >= 1)
+                {
+                    roundStartTimer++;
+                    if (roundStartTimer == 30)
+                    {
+                        roundStartLabel.Text = "";
+                        roundStartTimer = 0;
+                        round++;
+                        roundLabel.Text = $"Round: {round}";
+                    }
+                }
             }
 
             //enemy spawning
             {
-                if (round < 5)
+                if (round < 10)
                 {
                     //move enemies
                     for (int i = 0; i < soldierEnemy.Count(); i++)
@@ -558,6 +585,94 @@ namespace galaga
                     gameState = "over";
                 }
             }
+
+            //soldier enemy lasers
+            {
+                soldierLaserCounter++;
+
+                //create lasers
+                if (soldierLaserCounter > 20)
+                    {
+                        for (int i = 0; i < soldierEnemy.Count(); i++)
+                        {
+                            soldierLaser.Add(new Rectangle(soldierEnemy[i].X + 18, soldierEnemy[i].Y + soldierEnemy[i].Y, soldierLaserXSize, soldierLaserYSize));
+                        }
+                        soldierLaserCounter = 0;
+                    }
+                
+                for (int j = 0; j < soldierLaser.Count(); j++)
+                {
+                    //find the new postion of y based on speed 
+                    int y = soldierLaser[j].Y + soldierLaserSpeed;
+
+                    //replace the rectangle in the list with updated one using new y 
+                    soldierLaser[j] = new Rectangle(soldierLaser[j].X, y, soldierLaserXSize, soldierLaserYSize);
+
+                    //Check is laser touches top of the form and remove if it is
+                    
+                    if (soldierLaser[j].Y >= 600)
+                    {
+                        soldierLaser.RemoveAt(j);
+                    }
+                }
+               
+
+                //check if laser touches player
+                for (int i = 0; i < soldierLaser.Count(); i++)
+                {
+                    if (soldierLaser[i].IntersectsWith(hero))
+                    {
+                        playerHealth -= 1;
+                        soldierLaser.RemoveAt(i);
+                    }
+                }
+            }
+
+            //gameState code
+            {
+                if (gameState == "over")
+                {
+                    soldierEnemy.Clear();
+                    bomberEnemy.Clear();
+                    chaserEnemy.Clear();
+                    playerLaser.Clear();
+                    soldierLaser.Clear();
+
+                    roundLabel.Visible = false;
+                    timeLabel.Visible = false;
+                    scoreLabel.Visible = false;
+                }
+            }
+
+            //boss code
+            if (round == 10)
+            {
+                timeClock = 1000000000;
+                timeLabel.Text = $"---";
+
+                if(boss.Y >= -300)
+                {
+                    boss.Y += bossSpeed;
+                }
+                if (boss.Y >= 0)
+                {
+                    bossSpeed = 0;
+                }
+
+                //damage code
+                for (int i = 0; i < playerLaser.Count; i++)
+                {
+                    if (boss.IntersectsWith(playerLaser[i]))
+                    {
+                        bossHealth -= 1;
+                        playerLaser.RemoveAt(i);
+                    }
+
+
+                    
+                }
+
+            }
             Refresh();
         }
 
@@ -609,10 +724,23 @@ namespace galaga
                     e.Graphics.DrawImage(playerImage3, hero);
                 }
 
-                //draw lasers
+                //draw boss
+                if (bossHealth > 0)
+                {
+                    e.Graphics.DrawImage(bossImage1, boss);
+                }
+                
+                ///draw lasers
+                //player lasers
                 for (int i = 0; i < playerLaser.Count; i++)
                 {
                     e.Graphics.FillRectangle(greenBrush, playerLaser[i]);
+                }
+
+                //soldier lasers
+                for (int i = 0; i < soldierLaser.Count; i++)
+                {
+                    e.Graphics.FillRectangle(redBrush, soldierLaser[i]);
                 }
 
                 Font testFont = new Font("Arial", 12);
@@ -641,9 +769,6 @@ namespace galaga
             {
                 titleLabel.Text = $"You died! \nFinished with a score of {score}";
                 subtitleLabel.Text = $"Press Space Bar to Start or Escape to Exit";
-                roundLabel.Visible = false;
-                timeLabel.Visible = false;
-                scoreLabel.Visible = false;
             }
         }
     }

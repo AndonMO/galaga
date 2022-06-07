@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.gameEngine = new System.Windows.Forms.Timer(this.components);
             this.timeLabel = new System.Windows.Forms.Label();
             this.scoreLabel = new System.Windows.Forms.Label();
@@ -79,7 +80,7 @@
             this.roundLabel.ForeColor = System.Drawing.Color.OrangeRed;
             this.roundLabel.Location = new System.Drawing.Point(12, 47);
             this.roundLabel.Name = "roundLabel";
-            this.roundLabel.Size = new System.Drawing.Size(200, 19);
+            this.roundLabel.Size = new System.Drawing.Size(225, 19);
             this.roundLabel.TabIndex = 2;
             this.roundLabel.Text = "roundLabel";
             // 
@@ -156,6 +157,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(800, 600);
             this.Controls.Add(this.subtitleLabel);
             this.Controls.Add(this.titleLabel);
