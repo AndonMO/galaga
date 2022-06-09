@@ -27,6 +27,14 @@ namespace galaga
         Rectangle boss = new Rectangle(150, -300, 550, 300);
         int bossSpeed = 3;
         int bossHealth = 100;
+        int bossMoveTimer = 0;
+        
+        int bossRocketCounter = 0;
+        int bossRocketSpeed = 5;
+        int bossRocketXSize = 22;
+        int bossRocketYSize = 50;
+
+        List<Rectangle> bossRocket = new List<Rectangle>();
 
         //movement variables
         bool ADown = false;
@@ -105,6 +113,7 @@ namespace galaga
         Image chaserImage1 = Properties.Resources.chaserShip1;
 
         Image bossImage1 = Properties.Resources.boss1;
+        Image bossRocket1 = Properties.Resources.rocket1;
 
         Image background = Properties.Resources.GameBackground;
         
@@ -592,13 +601,13 @@ namespace galaga
 
                 //create lasers
                 if (soldierLaserCounter > 20)
+                {
+                    for (int i = 0; i < soldierEnemy.Count(); i++)
                     {
-                        for (int i = 0; i < soldierEnemy.Count(); i++)
-                        {
-                            soldierLaser.Add(new Rectangle(soldierEnemy[i].X + 18, soldierEnemy[i].Y + soldierEnemy[i].Y, soldierLaserXSize, soldierLaserYSize));
-                        }
-                        soldierLaserCounter = 0;
+                        soldierLaser.Add(new Rectangle(soldierEnemy[i].X + 18, soldierEnemy[i].Y + soldierEnemy[i].Y, soldierLaserXSize, soldierLaserYSize));
                     }
+                    soldierLaserCounter = 0;
+                }
                 
                 for (int j = 0; j < soldierLaser.Count(); j++)
                 {
@@ -645,33 +654,57 @@ namespace galaga
             }
 
             //boss code
-            if (round == 10)
             {
-                timeClock = 1000000000;
-                timeLabel.Text = $"---";
+                if (round == 10)
+                {
+                    timeClock = 1000000000;
+                    timeLabel.Text = $"Time left: ---";
 
-                if(boss.Y >= -300)
-                {
-                    boss.Y += bossSpeed;
-                }
-                if (boss.Y >= 0)
-                {
-                    bossSpeed = 0;
-                }
-
-                //damage code
-                for (int i = 0; i < playerLaser.Count; i++)
-                {
-                    if (boss.IntersectsWith(playerLaser[i]))
+                    if (boss.Y >= -300)
                     {
-                        bossHealth -= 1;
-                        playerLaser.RemoveAt(i);
+                        boss.Y += bossSpeed;
+                    }
+                    if (boss.Y >= 0)
+                    {
+                        bossSpeed = 0;
                     }
 
+                    //damage code
+                    for (int i = 0; i < playerLaser.Count; i++)
+                    {
+                        if (boss.IntersectsWith(playerLaser[i]))
+                        {
+                            bossHealth -= 1;
+                            playerLaser.RemoveAt(i);
+                        }
+                    }
 
-                    
+                    //rocket code
+                    bossMoveTimer++;
+                    if (bossMoveTimer == 100)
+                    {
+                        randValue = randGen.Next(1, 2);
+                        bossMoveTimer = 0;
+                    }
+
+                    if (randValue == 1)
+                    {
+                        //create rockets
+                        bossRocket.Add(new Rectangle(boss.X + 70, boss.Y + 280, bossRocketXSize, bossRocketYSize));
+                        randValue = 0;
+
+                        //move rockets
+                        
+                    }
+                    for (int i = 0; i < bossRocket.Count(); i++)
+                    {
+                        //find the new postion of y based on speed 
+                        int y = bossRocket[i].Y + bossRocketSpeed;
+
+                        //replace the rectangle in the list with updated one using new y 
+                        bossRocket[i] = new Rectangle(bossRocket[i].X, y, bossRocketXSize, bossRocketYSize);
+                    }
                 }
-
             }
             Refresh();
         }
@@ -697,10 +730,7 @@ namespace galaga
             }
 
             else if (gameState == "running")
-
             {
-                
-
                 //draw background
                 for (int i = 0; i < movingBackgrounds.Count; i++)
                 {
@@ -728,6 +758,12 @@ namespace galaga
                 if (bossHealth > 0)
                 {
                     e.Graphics.DrawImage(bossImage1, boss);
+                }
+
+                for (int i = 0; i < bossRocket.Count; i++)
+                {
+                    e.Graphics.DrawImage(bossRocket1, bossRocket[i]);
+                    
                 }
                 
                 ///draw lasers
