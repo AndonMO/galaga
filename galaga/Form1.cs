@@ -28,13 +28,27 @@ namespace galaga
         int bossSpeed = 3;
         int bossHealth = 100;
         int bossMoveTimer = 0;
-        
+
+        //boss rocket variables
+        bool rocketShooting = true;
         int bossRocketCounter = 0;
-        int bossRocketSpeed = 5;
+        int bossRocketSpeed = 15;
         int bossRocketXSize = 22;
         int bossRocketYSize = 50;
+        List<Rectangle> leftBossRocket = new List<Rectangle>();
+        List<Rectangle> rightBossRocket = new List<Rectangle>();
 
-        List<Rectangle> bossRocket = new List<Rectangle>();
+        //boss laser variables
+        bool laserShooting = true;
+        int bossLaserCounter = 0;
+        int bossLaserSpeed = 7;
+        int bossLaserXSize = 20;
+        int bossLaserYSize = 200;
+        int laserFlickOnTimer = 0;
+        bool laserOn = true;
+        int laserFlickOffTimer = 0;
+        List<Rectangle> leftBossLaser = new List<Rectangle>();
+        List<Rectangle> rightBossLaser = new List<Rectangle>();
 
         //movement variables
         bool ADown = false;
@@ -143,7 +157,7 @@ namespace galaga
 
             score = 0;
             playerHealth = 3;
-            round = 10;
+            round = 1;
 
             hero.X = 360;
             hero.Y = 520;
@@ -172,14 +186,14 @@ namespace galaga
                     break;
                 case Keys.Space:
 
-                    if (gameState == "waiting" || gameState == "over")
+                    if (gameState == "waiting" || gameState == "over" || gameState == "win")
                     {
                         GameInitialize();
                     }
                     break;
 
                 case Keys.Escape:
-                    if (gameState == "waiting" || gameState == "over")
+                    if (gameState == "waiting" || gameState == "over" || gameState == "win")
                     {
                         Application.Exit();
                     }
@@ -208,134 +222,134 @@ namespace galaga
         private void gameEngine_Tick(object sender, EventArgs e)
         {
             //Move hero
+            #region move Hero
+            if (ADown == true && hero.X > 0)
             {
-                if (ADown == true && hero.X > 0)
-                {
-                    hero.X -= heroSpeed;
-                }
-
-                if (DDown == true && hero.X < this.Width - hero.Width)
-                {
-                    hero.X += heroSpeed;
-                }
+                hero.X -= heroSpeed;
             }
+
+            if (DDown == true && hero.X < this.Width - hero.Width)
+            {
+                hero.X += heroSpeed;
+            }
+            #endregion
 
             //Fire animation for hero
+            #region Fire Animation
+            fireAnimation++;
+            if (fireAnimation == 15)
             {
-                fireAnimation++;
-                if (fireAnimation == 15)
+                fireAnimation = 1;
+            }
+            #endregion
+
+            //shooting
+            #region Shooting Code
+            laserCounter++;
+
+            //create lasers
+            if (shiftDown == true && laserCounter > 5)
+            {
+                playerLaser.Add(new Rectangle(hero.X + 18, hero.Y, playerLaserXSize, playerLaserYSize));
+                laserCounter = 0;
+            }
+
+            //move lasers
+            for (int i = 0; i < playerLaser.Count(); i++)
+            {
+                //find the new postion of y based on speed 
+                int y = playerLaser[i].Y - laserSpeed;
+
+                //replace the rectangle in the list with updated one using new y 
+                playerLaser[i] = new Rectangle(playerLaser[i].X, y, playerLaserXSize, playerLaserYSize);
+            }
+
+            //Check is laser touches top of the form and remove if it is
+            for (int i = 0; i < playerLaser.Count(); i++)
+            {
+                if (playerLaser[i].Y <= 0)
                 {
-                    fireAnimation = 1;
+                    playerLaser.RemoveAt(i);
                 }
             }
-            
-            //shooting
+
+
+            //check if laser touches soldier enemy
+            for (int i = 0; i < playerLaser.Count(); i++)
             {
-                laserCounter++;
-
-                //create lasers
-                if (shiftDown == true && laserCounter > 5)
+                for(int j = 0; j < soldierEnemy.Count(); j++)
                 {
-                    playerLaser.Add(new Rectangle(hero.X + 18, hero.Y, playerLaserXSize, playerLaserYSize));
-                    laserCounter = 0;
-                }
-
-                //move lasers
-                for (int i = 0; i < playerLaser.Count(); i++)
-                {
-                    //find the new postion of y based on speed 
-                    int y = playerLaser[i].Y - laserSpeed;
-
-                    //replace the rectangle in the list with updated one using new y 
-                    playerLaser[i] = new Rectangle(playerLaser[i].X, y, playerLaserXSize, playerLaserYSize);
-                }
-
-                //Check is laser touches top of the form and remove if it is
-                for (int i = 0; i < playerLaser.Count(); i++)
-                {
-                    if (playerLaser[i].Y <= 0)
+                    if (playerLaser[i].IntersectsWith(soldierEnemy[j]))
                     {
+                        soldierHealth[j] -= 10;
                         playerLaser.RemoveAt(i);
-                    }
-                }
 
-
-                //check if laser touches soldier enemy
-                for (int i = 0; i < playerLaser.Count(); i++)
-                {
-                    for(int j = 0; j < soldierEnemy.Count(); j++)
-                    {
-                        if (playerLaser[i].IntersectsWith(soldierEnemy[j]))
+                        if (soldierHealth[j] <= 0)
                         {
-                            soldierHealth[j] -= 10;
-                            playerLaser.RemoveAt(i);
+                            soldierEnemy.RemoveAt(j);
+                            soldierHealth.RemoveAt(j);
+                            soldierSpeeds.RemoveAt(j);
 
-                            if (soldierHealth[j] <= 0)
-                            {
-                                soldierEnemy.RemoveAt(j);
-                                soldierHealth.RemoveAt(j);
-                                soldierSpeeds.RemoveAt(j);
+                            score += 100;
 
-                                score += 100;
-
-                                scoreLabel.Text = $"{score}";
-                            }
+                            scoreLabel.Text = $"{score}";
                         }
                     }
                 }
+            }
 
-                //check if laser touches bomber enemy
-                for (int i = 0; i < playerLaser.Count(); i++)
+            //check if laser touches bomber enemy
+            for (int i = 0; i < playerLaser.Count(); i++)
+            {
+                for (int j = 0; j < bomberEnemy.Count(); j++)
                 {
-                    for (int j = 0; j < bomberEnemy.Count(); j++)
+                    if (playerLaser[i].IntersectsWith(bomberEnemy[j]))
                     {
-                        if (playerLaser[i].IntersectsWith(bomberEnemy[j]))
+                        bomberHealth[j] -= 10;
+                        //playerLaser.RemoveAt(i);
+
+                        if (bomberHealth[j] <= 0)
                         {
-                            bomberHealth[j] -= 10;
-                            //playerLaser.RemoveAt(i);
+                            bomberEnemy.RemoveAt(j);
+                            bomberHealth.RemoveAt(j);
+                            bomberSpeeds.RemoveAt(j);
 
-                            if (bomberHealth[j] <= 0)
-                            {
-                                bomberEnemy.RemoveAt(j);
-                                bomberHealth.RemoveAt(j);
-                                bomberSpeeds.RemoveAt(j);
+                            score += 50;
 
-                                score += 50;
-
-                                scoreLabel.Text = $"{score}";
-                            }
+                            scoreLabel.Text = $"{score}";
                         }
                     }
                 }
+            }
 
-                //check if laser touches chaser enemy
-                for (int i = 0; i < playerLaser.Count(); i++)
+            //check if laser touches chaser enemy
+            for (int i = 0; i < playerLaser.Count(); i++)
+            {
+                for (int j = 0; j < chaserEnemy.Count(); j++)
                 {
-                    for (int j = 0; j < chaserEnemy.Count(); j++)
+                    if (playerLaser[i].IntersectsWith(chaserEnemy[j]))
                     {
-                        if (playerLaser[i].IntersectsWith(chaserEnemy[j]))
+                        chaserHealth[j] -= 10;
+                        //playerLaser.RemoveAt(i);
+
+                        if (chaserHealth[j] <= 0)
                         {
-                            chaserHealth[j] -= 10;
-                            //playerLaser.RemoveAt(i);
+                            chaserEnemy.RemoveAt(j);
+                            chaserHealth.RemoveAt(j);
+                            chaserSpeeds.RemoveAt(j);
 
-                            if (chaserHealth[j] <= 0)
-                            {
-                                chaserEnemy.RemoveAt(j);
-                                chaserHealth.RemoveAt(j);
-                                chaserSpeeds.RemoveAt(j);
+                            score += 50;
 
-                                score += 50;
-
-                                scoreLabel.Text = $"{score}";
-                            }
+                            scoreLabel.Text = $"{score}";
                         }
                     }
                 }
-            }   
+            }
+            #endregion
 
             //moving background
-            {
-                backgroundCounter++;
+            #region Moving Background
+            backgroundCounter++;
 
                 //create background
                 if (backgroundCounter == 600)
@@ -352,11 +366,11 @@ namespace galaga
                     //replace the rectangle in the list with updated one using new y 
                     movingBackgrounds[i] = new Rectangle(movingBackgrounds[i].X, y, backgroundXSize, backgroundYSize);
                 }
-            }
+            #endregion
 
             //rounds
-            {
-                timeClockCounter++;
+            #region Rounds
+            timeClockCounter++;
 
                 if (timeClockCounter == 20)
                 {
@@ -391,11 +405,11 @@ namespace galaga
                         roundLabel.Text = $"Round: {round}";
                     }
                 }
-            }
+            #endregion
 
             //enemy spawning
-            {
-                if (round < 10)
+            #region Enemy Spawning
+            if (round < 10)
                 {
                     //move enemies
                     for (int i = 0; i < soldierEnemy.Count(); i++)
@@ -536,68 +550,68 @@ namespace galaga
                         }
                     }
                 }
-            }
+            #endregion
 
             //enemy hitting player; player loses health
+            #region Player collision
+            if (hittable == false)
             {
-                if (hittable == false)
-                {
-                    hittableCounter++;
-                }
+                hittableCounter++;
+            }
 
-                if (hittableCounter == 20)
-                {
-                    hittable = true;
-                    hittableCounter = 0;
-                }
+            if (hittableCounter == 20)
+            {
+                hittable = true;
+                hittableCounter = 0;
+            }
 
-                for (int i = 0; i < soldierEnemy.Count(); i++)
+            for (int i = 0; i < soldierEnemy.Count(); i++)
+            {
+                if (soldierEnemy[i].IntersectsWith(hero) && hittable == true)
                 {
-                    if (soldierEnemy[i].IntersectsWith(hero) && hittable == true)
-                    {
-                        playerHealth -= 1;
-                        hittable = false;
-                    }
-                }
-
-                for (int i = 0; i < bomberEnemy.Count(); i++)
-                {
-                    if (bomberEnemy[i].IntersectsWith(hero) && hittable == true)
-                    {
-                        playerHealth -= 1;
-                        hittable = false;
-                    }
-                }
-
-                for (int i = 0; i < chaserEnemy.Count(); i++)
-                {
-                    if (chaserEnemy[i].IntersectsWith(hero) && hittable == true)
-                    {
-                        playerHealth -= 1;
-                        hittable = false;
-                    }
-                }
-
-                if (playerHealth == 2)
-                {
-                    heart3.Visible = false;
-                }
-
-                else if (playerHealth == 1)
-                {
-                    heart2.Visible = false;
-                }
-
-                else if (playerHealth == 0)
-                {
-                    heart1.Visible = false;
-                    gameState = "over";
+                    playerHealth -= 1;
+                    hittable = false;
                 }
             }
 
-            //soldier enemy lasers
+            for (int i = 0; i < bomberEnemy.Count(); i++)
             {
-                soldierLaserCounter++;
+                if (bomberEnemy[i].IntersectsWith(hero) && hittable == true)
+                {
+                    playerHealth -= 1;
+                    hittable = false;
+                }
+            }
+
+            for (int i = 0; i < chaserEnemy.Count(); i++)
+            {
+                if (chaserEnemy[i].IntersectsWith(hero) && hittable == true)
+                {
+                    playerHealth -= 1;
+                    hittable = false;
+                }
+            }
+
+            if (playerHealth == 2)
+            {
+                heart3.Visible = false;
+            }
+
+            else if (playerHealth == 1)
+            {
+                heart2.Visible = false;
+            }
+
+            else if (playerHealth == 0)
+            {
+                heart1.Visible = false;
+                gameState = "over";
+            }
+            #endregion
+
+            //soldier enemy lasers
+            #region Soldier Lasers
+            soldierLaserCounter++;
 
                 //create lasers
                 if (soldierLaserCounter > 20)
@@ -635,81 +649,203 @@ namespace galaga
                         soldierLaser.RemoveAt(i);
                     }
                 }
-            }
+            #endregion
 
             //gameState code
+            #region GameStates
+            if (gameState == "over")
             {
-                if (gameState == "over")
-                {
-                    soldierEnemy.Clear();
-                    bomberEnemy.Clear();
-                    chaserEnemy.Clear();
-                    playerLaser.Clear();
-                    soldierLaser.Clear();
+                soldierEnemy.Clear();
+                bomberEnemy.Clear();
+                chaserEnemy.Clear();
+                playerLaser.Clear();
+                soldierLaser.Clear();
 
-                    roundLabel.Visible = false;
-                    timeLabel.Visible = false;
-                    scoreLabel.Visible = false;
-                }
+                roundLabel.Visible = false;
+                timeLabel.Visible = false;
+                scoreLabel.Visible = false;
             }
+
+            if (gameState == "win")
+            {
+                soldierEnemy.Clear();
+                bomberEnemy.Clear();
+                chaserEnemy.Clear();
+                playerLaser.Clear();
+                soldierLaser.Clear();
+                leftBossRocket.Clear();
+                rightBossRocket.Clear();
+                leftBossLaser.Clear();
+                rightBossLaser.Clear();
+
+                roundLabel.Visible = false;
+                timeLabel.Visible = false;
+                scoreLabel.Visible = false;
+            }
+            #endregion
 
             //boss code
+            #region Boss
+            if (round == 10)
             {
-                if (round == 10)
+                timeClock = 1000000000;
+                timeLabel.Text = $"Time left: ---";
+
+                if (boss.Y >= -300)
                 {
-                    timeClock = 1000000000;
-                    timeLabel.Text = $"Time left: ---";
+                    boss.Y += bossSpeed;
+                }
+                if (boss.Y >= 0)
+                {
+                    bossSpeed = 0;
+                }
 
-                    if (boss.Y >= -300)
+                //damage code
+                #region damage
+                for (int i = 0; i < playerLaser.Count; i++)
+                {
+                    if (boss.IntersectsWith(playerLaser[i]))
                     {
-                        boss.Y += bossSpeed;
-                    }
-                    if (boss.Y >= 0)
-                    {
-                        bossSpeed = 0;
-                    }
-
-                    //damage code
-                    for (int i = 0; i < playerLaser.Count; i++)
-                    {
-                        if (boss.IntersectsWith(playerLaser[i]))
-                        {
-                            bossHealth -= 1;
-                            playerLaser.RemoveAt(i);
-                        }
-                    }
-
-                    //rocket code
-                    bossMoveTimer++;
-                    if (bossMoveTimer == 100)
-                    {
-                        randValue = randGen.Next(1, 2);
-                        bossMoveTimer = 0;
-                    }
-
-                    if (randValue == 1)
-                    {
-                        //create rockets
-                        bossRocket.Add(new Rectangle(boss.X + 70, boss.Y + 280, bossRocketXSize, bossRocketYSize));
-                        randValue = 0;
-
-                        //move rockets
-                        
-                    }
-                    for (int i = 0; i < bossRocket.Count(); i++)
-                    {
-                        //find the new postion of y based on speed 
-                        int y = bossRocket[i].Y + bossRocketSpeed;
-
-                        //replace the rectangle in the list with updated one using new y 
-                        bossRocket[i] = new Rectangle(bossRocket[i].X, y, bossRocketXSize, bossRocketYSize);
+                        bossHealth -= 1;
+                        playerLaser.RemoveAt(i);
                     }
                 }
+
+                if (bossHealth == 0)
+                {
+                    rocketShooting = false;
+                    gameState = "win";
+                }
+                #endregion
+
+                //attacks code
+                #region Attacks
+                bossMoveTimer++;
+                if (bossMoveTimer == 30 && rocketShooting == true && laserShooting == true)
+                {
+                    randValue = randGen.Next(1, 4);
+                    bossMoveTimer = 0;
+                }
+
+                //rockets code
+                #region Boss rockets
+                if (randValue == 1)
+                {
+                    //create rockets
+                    leftBossRocket.Add(new Rectangle(boss.X + 70, boss.Y + 280, bossRocketXSize, bossRocketYSize));
+                    rightBossRocket.Add(new Rectangle(boss.X + 420, boss.Y + 280, bossRocketXSize, bossRocketYSize));
+                    randValue = 0;
+                }
+                        
+                //move left rockets
+                for (int i = 0; i < leftBossRocket.Count(); i++)
+                {
+                    //find the new postion of y based on speed 
+                    int y = leftBossRocket[i].Y + bossRocketSpeed;
+
+                    //replace the rectangle in the list with updated one using new y 
+                    leftBossRocket[i] = new Rectangle(leftBossRocket[i].X, y, bossRocketXSize, bossRocketYSize);
+                }
+
+                //move right rockets
+                for (int i = 0; i < rightBossRocket.Count(); i++)
+                {
+                    //find the new postion of y based on speed 
+                    int y = rightBossRocket[i].Y + bossRocketSpeed;
+
+                    //replace the rectangle in the list with updated one using new y 
+                    rightBossRocket[i] = new Rectangle(rightBossRocket[i].X, y, bossRocketXSize, bossRocketYSize);
+                }
+
+                //boss rocket damage
+                for (int i = 0; i < leftBossRocket.Count(); i++)
+                {
+                    if (hero.IntersectsWith(leftBossRocket[i]) && hittable == true && laserOn == true)
+                    {
+                        playerHealth -= 1;
+                        hittable = false;
+                    }
+                }
+
+                for (int i = 0; i < rightBossRocket.Count(); i++)
+                {
+                    if (hero.IntersectsWith(rightBossRocket[i]) && hittable == true && laserOn == true)
+                    {
+                        playerHealth -= 1;
+                        hittable = false;
+                    }
+                }
+                #endregion
+
+                //sweep laser code
+                #region Boss sweep lasers
+                laserFlickOnTimer++;
+
+                if (laserFlickOnTimer == 20)
+                {
+                    laserOn = !laserOn;
+                    laserFlickOnTimer = 0;
+                }
+
+                //right sweep laser intersection
+                for (int i = 0; i < rightBossLaser.Count(); i++)
+                {
+                    if (hero.IntersectsWith(rightBossLaser[i]) && laserOn == true && hittable == true)
+                    {
+                        playerHealth -= 1;
+                        hittable = false;
+                    }
+                }
+
+                for (int i = 0; i < leftBossLaser.Count(); i++)
+                {
+                    if (hero.IntersectsWith(leftBossLaser[i]) && laserOn == true && hittable == true)
+                    {
+                        playerHealth -= 1;
+                        hittable = false;
+                    }
+                }
+
+                //Create right Laser Sweep
+                if (randValue == 2)
+                {
+                    rightBossLaser.Add(new Rectangle(600, 400, bossLaserXSize, bossLaserYSize));
+                    randValue = 0;
+                }
+
+                //move right laser
+                for (int i = 0; i < rightBossLaser.Count(); i++)
+                {
+                    //find the new postion of y based on speed 
+                    int x = rightBossLaser[i].X - bossLaserSpeed;
+
+                    //replace the rectangle in the list with updated one using new y 
+                    rightBossLaser[i] = new Rectangle(x, rightBossLaser[i].Y, bossLaserXSize, bossLaserYSize); 
+                }
+
+                //create left laser sweep
+                if (randValue == 3)
+                {
+                    leftBossLaser.Add(new Rectangle(0, 400, bossLaserXSize, bossLaserYSize));
+                    randValue = 0;
+                }
+
+                //move right laser
+                for (int i = 0; i < leftBossLaser.Count(); i++)
+                {
+                    //find the new postion of y based on speed 
+                    int x = leftBossLaser[i].X + bossLaserSpeed;
+
+                    //replace the rectangle in the list with updated one using new y 
+                    leftBossLaser[i] = new Rectangle(x, leftBossLaser[i].Y, bossLaserXSize, bossLaserYSize);
+                }
+                #endregion
             }
+            #endregion
+
+            #endregion
             Refresh();
         }
-
-        
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
@@ -760,12 +896,35 @@ namespace galaga
                     e.Graphics.DrawImage(bossImage1, boss);
                 }
 
-                for (int i = 0; i < bossRocket.Count; i++)
+                //boss rockets
+                for (int i = 0; i < leftBossRocket.Count; i++)
                 {
-                    e.Graphics.DrawImage(bossRocket1, bossRocket[i]);
-                    
+                    e.Graphics.DrawImage(bossRocket1, leftBossRocket[i]);
                 }
-                
+
+                for (int i = 0; i < rightBossRocket.Count; i++)
+                {
+                    e.Graphics.DrawImage(bossRocket1, rightBossRocket[i]);
+                }
+
+                //boss laser
+                for (int i = 0; i < rightBossLaser.Count; i++)
+                {
+                    if (laserOn == true)
+                    {
+                        e.Graphics.FillRectangle(redBrush, rightBossLaser[i]);
+                    }
+                }
+
+                //left boss laser
+                for (int i = 0; i < leftBossLaser.Count; i++)
+                {
+                    if (laserOn == true)
+                    {
+                        e.Graphics.FillRectangle(redBrush, leftBossLaser[i]);
+                    }
+                }
+
                 ///draw lasers
                 //player lasers
                 for (int i = 0; i < playerLaser.Count; i++)
@@ -804,6 +963,12 @@ namespace galaga
             else if (gameState == "over")
             {
                 titleLabel.Text = $"You died! \nFinished with a score of {score}";
+                subtitleLabel.Text = $"Press Space Bar to Start or Escape to Exit";
+            }
+
+            else if (gameState == "win")
+            {
+                titleLabel.Text = $"You win! \nFinished with a score of {score}";
                 subtitleLabel.Text = $"Press Space Bar to Start or Escape to Exit";
             }
         }
