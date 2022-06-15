@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Media;
+using System.IO;
 
 namespace galaga
 {
@@ -130,7 +131,10 @@ namespace galaga
         Image bossRocket1 = Properties.Resources.rocket1;
 
         Image background = Properties.Resources.GameBackground;
-        
+
+        //sound players
+        System.Windows.Media.MediaPlayer bossMusic = new System.Windows.Media.MediaPlayer();
+
         public Form1()
         {
             InitializeComponent();
@@ -143,6 +147,8 @@ namespace galaga
             subtitleLabel.Text = "";
 
             gameState = "running";
+
+            bossMusic.Open(new Uri(Application.StartupPath + "/Resources/bossMusic.mp3"));
 
             gameEngine.Enabled = true;
             soldierEnemy.Clear();
@@ -157,7 +163,7 @@ namespace galaga
 
             score = 0;
             playerHealth = 3;
-            round = 1;
+            round = 10;
 
             hero.X = 360;
             hero.Y = 520;
@@ -964,12 +970,28 @@ namespace galaga
             {
                 titleLabel.Text = $"You died! \nFinished with a score of {score}";
                 subtitleLabel.Text = $"Press Space Bar to Start or Escape to Exit";
+
+                timeLabel.Visible = false;
+                roundLabel.Visible = false;
+                scoreLabel.Visible = false;
+
+                heart1.Visible = false;
+                heart2.Visible = false;
+                heart3.Visible = false;
             }
 
             else if (gameState == "win")
             {
                 titleLabel.Text = $"You win! \nFinished with a score of {score}";
                 subtitleLabel.Text = $"Press Space Bar to Start or Escape to Exit";
+
+                timeLabel.Visible = false;
+                roundLabel.Visible = false;
+                scoreLabel.Visible = false;
+
+                heart1.Visible = false;
+                heart2.Visible = false;
+                heart3.Visible = false;
             }
         }
     }
