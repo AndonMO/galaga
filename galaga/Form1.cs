@@ -17,12 +17,19 @@ namespace galaga
     {
         //player variables
         Rectangle hero = new Rectangle(360, 520, 55, 75);
-        int heroSpeed = 7;
+        int heroSpeed = 5;
         int fireAnimation = 1;
         int playerHealth = 3;
 
         bool hittable = true;
         int hittableCounter = 0;
+
+        //hearts
+        int heartSpeed = 4;
+        int heartYSize = 10;
+        int heartXSize = 10;
+
+        List<Rectangle> hearts = new List<Rectangle>();
 
         //boss variables
         Rectangle boss = new Rectangle(150, -300, 550, 300);
@@ -32,8 +39,7 @@ namespace galaga
 
         //boss rocket variables
         bool rocketShooting = true;
-        int bossRocketCounter = 0;
-        int bossRocketSpeed = 15;
+        int bossRocketSpeed = 10;
         int bossRocketXSize = 22;
         int bossRocketYSize = 50;
         List<Rectangle> leftBossRocket = new List<Rectangle>();
@@ -41,13 +47,11 @@ namespace galaga
 
         //boss laser variables
         bool laserShooting = true;
-        int bossLaserCounter = 0;
-        int bossLaserSpeed = 7;
+        int bossLaserSpeed = 4;
         int bossLaserXSize = 20;
         int bossLaserYSize = 200;
         int laserFlickOnTimer = 0;
         bool laserOn = true;
-        int laserFlickOffTimer = 0;
         List<Rectangle> leftBossLaser = new List<Rectangle>();
         List<Rectangle> rightBossLaser = new List<Rectangle>();
 
@@ -130,15 +134,20 @@ namespace galaga
         Image bossImage1 = Properties.Resources.boss1;
         Image bossRocket1 = Properties.Resources.rocket1;
 
+        Image resizeHeart = Properties.Resources.heart;
+
         Image background = Properties.Resources.GameBackground;
 
         //sound players
-        System.Windows.Media.MediaPlayer bossMusic = new System.Windows.Media.MediaPlayer();
+        System.Windows.Media.MediaPlayer bossMedia = new System.Windows.Media.MediaPlayer();
 
         public Form1()
         {
             InitializeComponent();
             movingBackgrounds.Add(new Rectangle(0, 0, backgroundXSize, backgroundYSize));
+
+            bossMedia.Open(new Uri(Application.StartupPath + "/Resources/bossMusic.mp3"));
+            bossMedia.MediaEnded += new EventHandler(bossMedia_MediaEnded);
         }
 
         public void GameInitialize()
@@ -147,8 +156,6 @@ namespace galaga
             subtitleLabel.Text = "";
 
             gameState = "running";
-
-            bossMusic.Open(new Uri(Application.StartupPath + "/Resources/bossMusic.mp3"));
 
             gameEngine.Enabled = true;
             soldierEnemy.Clear();
@@ -173,6 +180,12 @@ namespace galaga
             scoreLabel.Text = "0";
 
             timeClock = 30;
+        }
+
+        private void bossMedia_MediaEnded(object sender, EventArgs e)
+        {
+            bossMedia.Stop();
+            bossMedia.Play();
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -249,6 +262,33 @@ namespace galaga
             }
             #endregion
 
+            //hearts
+            #region Hearts
+
+            //move hearts
+            for (int i = 0; i < hearts.Count(); i++)
+            {
+                //find the new postion of y based on speed
+                int Y = hearts[i].Y + heartSpeed;
+
+                //replace the rectangle in the list with updated one using new y
+                hearts[i] = new Rectangle(hearts[i].X, Y, heartXSize, heartYSize);
+            }
+
+            //create hearts
+
+            randValue = randGen.Next(0, 201);
+
+            if (randValue < 1)
+            {
+                int heartx = randGen.Next(10, this.Width - bomberXSize * 2);
+                hearts.Add(new Rectangle(heartx, 10, heartXSize, heartYSize));
+            }
+
+            
+            
+            #endregion
+
             //shooting
             #region Shooting Code
             laserCounter++;
@@ -258,6 +298,12 @@ namespace galaga
             {
                 playerLaser.Add(new Rectangle(hero.X + 18, hero.Y, playerLaserXSize, playerLaserYSize));
                 laserCounter = 0;
+
+                var laserSound = new System.Windows.Media.MediaPlayer();
+
+                laserSound.Open(new Uri(Application.StartupPath + "/Resources/laserSound.wav"));
+
+                laserSound.Play();
             }
 
             //move lasers
@@ -571,6 +617,16 @@ namespace galaga
                 hittableCounter = 0;
             }
 
+            //hearts
+            for (int i = 0; i < hearts.Count(); i++)
+            {
+                if (hero.IntersectsWith(hearts[i]) && hittable == true)
+                {
+                    playerHealth += 1;
+                    hittable = false;
+                }
+            }
+
             for (int i = 0; i < soldierEnemy.Count(); i++)
             {
                 if (soldierEnemy[i].IntersectsWith(hero) && hittable == true)
@@ -598,20 +654,40 @@ namespace galaga
                 }
             }
 
-            if (playerHealth == 2)
+            if (playerHealth == 3)
+            {
+                heart3.Visible = true;
+                heart2.Visible = true;
+                heart1.Visible = true;
+            }
+
+            else if (playerHealth == 2)
             {
                 heart3.Visible = false;
+                heart2.Visible = true;
+                heart1.Visible = true;
             }
 
             else if (playerHealth == 1)
             {
+
+                heart3.Visible = false;
                 heart2.Visible = false;
+                heart1.Visible = true;
             }
 
             else if (playerHealth == 0)
             {
+
+                heart3.Visible = false;
+                heart2.Visible = false;
                 heart1.Visible = false;
                 gameState = "over";
+            }
+
+            if (playerHealth == 4)
+            {
+                playerHealth = 3;
             }
             #endregion
 
@@ -667,6 +743,8 @@ namespace galaga
                 playerLaser.Clear();
                 soldierLaser.Clear();
 
+                bossMedia.Stop();
+
                 roundLabel.Visible = false;
                 timeLabel.Visible = false;
                 scoreLabel.Visible = false;
@@ -684,6 +762,8 @@ namespace galaga
                 leftBossLaser.Clear();
                 rightBossLaser.Clear();
 
+                bossMedia.Stop();
+
                 roundLabel.Visible = false;
                 timeLabel.Visible = false;
                 scoreLabel.Visible = false;
@@ -694,6 +774,9 @@ namespace galaga
             #region Boss
             if (round == 10)
             {
+                //music
+                bossMedia.Play();
+
                 timeClock = 1000000000;
                 timeLabel.Text = $"Time left: ---";
 
@@ -727,7 +810,7 @@ namespace galaga
                 //attacks code
                 #region Attacks
                 bossMoveTimer++;
-                if (bossMoveTimer == 30 && rocketShooting == true && laserShooting == true)
+                if (bossMoveTimer == 150 && rocketShooting == true && laserShooting == true)
                 {
                     randValue = randGen.Next(1, 4);
                     bossMoveTimer = 0;
@@ -787,7 +870,7 @@ namespace galaga
                 #region Boss sweep lasers
                 laserFlickOnTimer++;
 
-                if (laserFlickOnTimer == 20)
+                if (laserFlickOnTimer == 35)
                 {
                     laserOn = !laserOn;
                     laserFlickOnTimer = 0;
@@ -815,7 +898,7 @@ namespace galaga
                 //Create right Laser Sweep
                 if (randValue == 2)
                 {
-                    rightBossLaser.Add(new Rectangle(600, 400, bossLaserXSize, bossLaserYSize));
+                    rightBossLaser.Add(new Rectangle(800, 400, bossLaserXSize, bossLaserYSize));
                     randValue = 0;
                 }
 
@@ -894,6 +977,13 @@ namespace galaga
                 if (fireAnimation < 15 && fireAnimation > 9)
                 {
                     e.Graphics.DrawImage(playerImage3, hero);
+                }
+
+                //draw hearts
+                for (int i = 0; i < hearts.Count; i++)
+                {
+                    e.Graphics.DrawImage(resizeHeart, hearts[i]);
+                    //e.Graphics.FillRectangle(greenBrush, hearts[i]);
                 }
 
                 //draw boss

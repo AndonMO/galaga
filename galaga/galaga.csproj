@@ -104,9 +104,6 @@
     <None Include="Resources\soldierShip1.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\heart.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newheart.png" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +130,12 @@
     <None Include="Resources\laserSound.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\heart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\resizeHeart.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

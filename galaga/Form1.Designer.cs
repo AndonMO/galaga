@@ -98,33 +98,30 @@
             // heart3
             // 
             this.heart3.BackColor = System.Drawing.Color.Transparent;
-            this.heart3.Image = global::galaga.Properties.Resources.newheart;
+            this.heart3.Image = global::galaga.Properties.Resources.resizeHeart;
             this.heart3.Location = new System.Drawing.Point(715, 396);
             this.heart3.Name = "heart3";
             this.heart3.Size = new System.Drawing.Size(73, 60);
-            this.heart3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.heart3.TabIndex = 6;
             this.heart3.TabStop = false;
             // 
             // heart2
             // 
             this.heart2.BackColor = System.Drawing.Color.Transparent;
-            this.heart2.Image = global::galaga.Properties.Resources.newheart;
+            this.heart2.Image = global::galaga.Properties.Resources.resizeHeart;
             this.heart2.Location = new System.Drawing.Point(715, 462);
             this.heart2.Name = "heart2";
             this.heart2.Size = new System.Drawing.Size(73, 60);
-            this.heart2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.heart2.TabIndex = 5;
             this.heart2.TabStop = false;
             // 
             // heart1
             // 
             this.heart1.BackColor = System.Drawing.Color.Transparent;
-            this.heart1.Image = global::galaga.Properties.Resources.newheart;
+            this.heart1.Image = global::galaga.Properties.Resources.resizeHeart;
             this.heart1.Location = new System.Drawing.Point(715, 528);
             this.heart1.Name = "heart1";
             this.heart1.Size = new System.Drawing.Size(73, 60);
-            this.heart1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.heart1.TabIndex = 4;
             this.heart1.TabStop = false;
             // 
