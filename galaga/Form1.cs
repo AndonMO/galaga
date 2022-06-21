@@ -169,8 +169,8 @@ namespace galaga
             heart3.Visible = true;
 
             score = 0;
-            playerHealth = 3;
-            round = 10;
+            playerHealth = 3; 
+            round = 1;
 
             hero.X = 360;
             hero.Y = 520;
@@ -424,7 +424,7 @@ namespace galaga
             #region Rounds
             timeClockCounter++;
 
-                if (timeClockCounter == 20)
+                if (timeClockCounter == 30)
                 {
                    
 
@@ -738,12 +738,29 @@ namespace galaga
             if (gameState == "over")
             {
                 soldierEnemy.Clear();
+                soldierHealth.Clear();
+                soldierSpeeds.Clear();
                 bomberEnemy.Clear();
+                bomberHealth.Clear();
+                bomberSpeeds.Clear();
                 chaserEnemy.Clear();
+                chaserHealth.Clear();
+                chaserSpeeds.Clear();
                 playerLaser.Clear();
                 soldierLaser.Clear();
+                leftBossRocket.Clear();
+                rightBossRocket.Clear();
+                leftBossLaser.Clear();
+                rightBossLaser.Clear();
+
+                hearts.Clear();
+
 
                 bossMedia.Stop();
+
+                shiftDown = false;
+                ADown = false;
+                DDown = false; 
 
                 roundLabel.Visible = false;
                 timeLabel.Visible = false;
@@ -753,14 +770,21 @@ namespace galaga
             if (gameState == "win")
             {
                 soldierEnemy.Clear();
+                soldierHealth.Clear();
+                soldierSpeeds.Clear();
                 bomberEnemy.Clear();
+                bomberHealth.Clear();
+                bomberSpeeds.Clear();
                 chaserEnemy.Clear();
+                chaserHealth.Clear();
+                chaserSpeeds.Clear();
                 playerLaser.Clear();
                 soldierLaser.Clear();
                 leftBossRocket.Clear();
                 rightBossRocket.Clear();
                 leftBossLaser.Clear();
                 rightBossLaser.Clear();
+                hearts.Clear();
 
                 bossMedia.Stop();
 
