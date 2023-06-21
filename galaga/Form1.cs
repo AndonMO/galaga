@@ -10,16 +10,34 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Media;
 using System.IO;
+using System.Xml;
 
 namespace galaga
 {
     public partial class Form1 : Form
     {
+
         public Form1()
         {
             InitializeComponent();
-
+            loadScores();
             ChangeScreen(this, new menuScreen());
+        }
+
+        public void loadScores()
+        {
+            string highscores;
+            XmlReader reader = XmlReader.Create("Resources/scoreFile.xml");
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Text)
+                {
+                    highscores = reader.ReadString();
+                    gameScreen.highscores.Add(new Highscore(Convert.ToInt32(highscores)));
+                }
+            }
+            reader.Close();
         }
 
         public static void ChangeScreen(object sender, UserControl next)

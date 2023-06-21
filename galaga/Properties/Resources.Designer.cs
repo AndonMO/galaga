@@ -130,6 +130,19 @@ namespace galaga.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;leaderboard&gt;
+        ///	&lt;score&gt; 666&lt;/score&gt;
+        ///&lt;/leaderboard&gt;
+        ///.
+        /// </summary>
+        internal static string leaderboard {
+            get {
+                return ResourceManager.GetString("leaderboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap menubackground {
@@ -196,6 +209,18 @@ namespace galaga.Properties {
             get {
                 object obj = ResourceManager.GetObject("rocket1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;leaderboard&gt;
+        ///	&lt;score&gt; 666&lt;/score&gt;
+        ///&lt;/leaderboard&gt;.
+        /// </summary>
+        internal static string scoreFile {
+            get {
+                return ResourceManager.GetString("scoreFile", resourceCulture);
             }
         }
         

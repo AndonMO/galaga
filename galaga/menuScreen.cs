@@ -29,6 +29,7 @@ namespace galaga
 
         private void playButton_Click(object sender, EventArgs e)
         {
+            int x = 7;
             Form1.ChangeScreen(this, new gameScreen());
         }
 

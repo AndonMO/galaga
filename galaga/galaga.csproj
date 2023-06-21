@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
@@ -73,6 +76,7 @@
     <Compile Include="Hero.cs" />
     <Compile Include="bossLaser.cs" />
     <Compile Include="bossRocket.cs" />
+    <Compile Include="Highscore.cs" />
     <Compile Include="instructions.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -81,9 +85,11 @@
     </Compile>
     <Compile Include="leaderboard.cs">
       <SubType>UserControl</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
     <Compile Include="leaderboard.Designer.cs">
       <DependentUpon>leaderboard.cs</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
     <Compile Include="menuScreen.cs">
       <SubType>UserControl</SubType>
@@ -110,6 +116,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="leaderboard.resx">
       <DependentUpon>leaderboard.cs</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="menuScreen.resx">
       <DependentUpon>menuScreen.cs</DependentUpon>
@@ -124,6 +131,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -213,6 +221,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\menubackground.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="leaderboard.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\scoreFile.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

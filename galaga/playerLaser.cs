@@ -74,7 +74,7 @@ namespace galaga
         public bool Collision(Boss b)
         {
             Rectangle laserRec = new Rectangle(x, y, xSize, ySize);
-            Rectangle bossRec = new Rectangle(b.x, b.y, b.xSize, b.ySize);
+            Rectangle bossRec = new Rectangle(b.x, b.y, b.width, b.height);
 
             if (laserRec.IntersectsWith(bossRec))
             {

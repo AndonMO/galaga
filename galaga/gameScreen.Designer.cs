@@ -54,10 +54,10 @@
             this.timeLabel.BackColor = System.Drawing.Color.Transparent;
             this.timeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.timeLabel.ForeColor = System.Drawing.Color.OrangeRed;
-            this.timeLabel.Location = new System.Drawing.Point(4, 17);
+            this.timeLabel.Location = new System.Drawing.Point(4, 18);
             this.timeLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.timeLabel.Name = "timeLabel";
-            this.timeLabel.Size = new System.Drawing.Size(316, 23);
+            this.timeLabel.Size = new System.Drawing.Size(316, 22);
             this.timeLabel.TabIndex = 1;
             this.timeLabel.Text = "timeLabel";
             // 
@@ -69,7 +69,7 @@
             this.scoreLabel.Location = new System.Drawing.Point(4, 40);
             this.scoreLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.scoreLabel.Name = "scoreLabel";
-            this.scoreLabel.Size = new System.Drawing.Size(267, 23);
+            this.scoreLabel.Size = new System.Drawing.Size(268, 22);
             this.scoreLabel.TabIndex = 2;
             this.scoreLabel.Text = "scoreLabel";
             // 
@@ -78,10 +78,10 @@
             this.roundLabel.BackColor = System.Drawing.Color.Transparent;
             this.roundLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.roundLabel.ForeColor = System.Drawing.Color.OrangeRed;
-            this.roundLabel.Location = new System.Drawing.Point(4, 63);
+            this.roundLabel.Location = new System.Drawing.Point(4, 62);
             this.roundLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.roundLabel.Name = "roundLabel";
-            this.roundLabel.Size = new System.Drawing.Size(300, 23);
+            this.roundLabel.Size = new System.Drawing.Size(300, 22);
             this.roundLabel.TabIndex = 3;
             this.roundLabel.Text = "roundLabel";
             // 
@@ -106,7 +106,7 @@
             this.heart1.Location = new System.Drawing.Point(950, 638);
             this.heart1.Margin = new System.Windows.Forms.Padding(4);
             this.heart1.Name = "heart1";
-            this.heart1.Size = new System.Drawing.Size(97, 74);
+            this.heart1.Size = new System.Drawing.Size(98, 74);
             this.heart1.TabIndex = 11;
             this.heart1.TabStop = false;
             // 
@@ -117,7 +117,7 @@
             this.heart2.Location = new System.Drawing.Point(950, 556);
             this.heart2.Margin = new System.Windows.Forms.Padding(4);
             this.heart2.Name = "heart2";
-            this.heart2.Size = new System.Drawing.Size(97, 74);
+            this.heart2.Size = new System.Drawing.Size(98, 74);
             this.heart2.TabIndex = 12;
             this.heart2.TabStop = false;
             // 
@@ -128,7 +128,7 @@
             this.heart3.Location = new System.Drawing.Point(950, 474);
             this.heart3.Margin = new System.Windows.Forms.Padding(4);
             this.heart3.Name = "heart3";
-            this.heart3.Size = new System.Drawing.Size(97, 74);
+            this.heart3.Size = new System.Drawing.Size(98, 74);
             this.heart3.TabIndex = 13;
             this.heart3.TabStop = false;
             // 
@@ -137,19 +137,18 @@
             this.roundStartLabel.BackColor = System.Drawing.Color.Transparent;
             this.roundStartLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.roundStartLabel.ForeColor = System.Drawing.Color.OrangeRed;
-            this.roundStartLabel.Location = new System.Drawing.Point(233, 298);
+            this.roundStartLabel.Location = new System.Drawing.Point(232, 298);
             this.roundStartLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.roundStartLabel.Name = "roundStartLabel";
             this.roundStartLabel.Size = new System.Drawing.Size(584, 121);
             this.roundStartLabel.TabIndex = 14;
-            this.roundStartLabel.Text = "round start";
             this.roundStartLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.roundStartLabel.Visible = false;
             // 
             // gameScreen
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.BackgroundImage = global::galaga.Properties.Resources.GameBackground;
             this.Controls.Add(this.roundStartLabel);
             this.Controls.Add(this.heart3);
             this.Controls.Add(this.heart2);
@@ -158,8 +157,13 @@
             this.Controls.Add(this.roundLabel);
             this.Controls.Add(this.scoreLabel);
             this.Controls.Add(this.timeLabel);
+            this.DoubleBuffered = true;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "gameScreen";
             this.Size = new System.Drawing.Size(1051, 716);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.gameScreen_Paint);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.gameScreen_KeyUp);
+            this.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.gameScreen_PreviewKeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.heart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.heart2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.heart3)).EndInit();

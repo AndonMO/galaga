@@ -16,5 +16,10 @@ namespace galaga
         {
             InitializeComponent();
         }
+
+        private void backButton_Click(object sender, EventArgs e)
+        {
+            Form1.ChangeScreen(this, new menuScreen());
+        }
     }
 }

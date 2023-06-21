@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Xml;
 
 namespace galaga
 {
@@ -15,24 +16,14 @@ namespace galaga
     {
         //player variables
         Hero hero;
-        Boolean aDown, dDown;
-        ////Rectangle hero = new Rectangle(600, 700, 55, 75);
-        ////int heroSpeed = 5;
         int fireAnimation = 1;
-        ////int playerHealth = 3;
-
         bool hittable = true;
         int hittableCounter = 0;
 
         //hearts
-        ////int heartSpeed = 4;
-        ////int heartYSize = 10;
-        ////int heartXSize = 10;
-
         List<hearts> hearts = new List<hearts>();
 
         //boss variables
-        //Rectangle boss = new Rectangle(300, -300, 550, 300);
         Boss boss;
         int bossSpeed = 3;
         int bossHealth = 100;
@@ -46,9 +37,6 @@ namespace galaga
 
         //boss laser variables
         bool laserShooting = true;
-        int bossLaserSpeed = 4;
-        int bossLaserXSize = 20;
-        int bossLaserYSize = 200;
         int laserFlickOnTimer = 0;
         bool laserOn = true;
         List<bossLaser> leftBossLaser = new List<bossLaser>();
@@ -56,15 +44,11 @@ namespace galaga
 
 
         //movement variables
-        bool ADown = false;
-        bool DDown = false;
+        Boolean aDown, dDown;
         bool shiftDown = false;
 
         //laser variables
         List<playerLaser> pLasers = new List<playerLaser>();
-        int playerLaserXSize = 3;
-        int playerLaserYSize = 8;
-        int laserSpeed = 15;
         int laserCounter = 0;
 
         //background variables
@@ -75,8 +59,8 @@ namespace galaga
         int backgroundYSize = 751;
 
         //round variables
-        int score = 0;
-        int round = 1;
+        public static int score = 0;
+        int round = 9;
         double timeClock = -1;
         int timeClockCounter = 0;
         int roundStartTimer = 0;
@@ -97,9 +81,7 @@ namespace galaga
         List<int> soldierHealth = new List<int>();
         int soldierXSize = 45;
         int soldierYSize = 47;
-        int soldierLaserXSize = 3;
-        int soldierLaserYSize = 8;
-        int soldierLaserSpeed = 7;
+
         int soldierLaserCounter = 0;
 
         //chaser enemy
@@ -140,22 +122,34 @@ namespace galaga
 
         System.Windows.Media.MediaPlayer bossMedia = new System.Windows.Media.MediaPlayer();
 
+        public static List<Highscore> highscores = new List<Highscore>();
+
+
 
         public gameScreen()
         {
             InitializeComponent();
+            
+            ExtractScores();
 
             movingBackgrounds.Add(new Rectangle(0, 0, backgroundXSize, backgroundYSize));
+
             bossMedia.Open(new Uri(Application.StartupPath + "/Resources/bossMusic.mp3"));
             bossMedia.MediaEnded += new EventHandler(bossMedia_MediaEnded);
 
+            
             GameInitialize();
+
         }
 
         public void GameInitialize()
         {
-            hero = new Hero(600, 700, 5, 3, 55, 75);
-            bossMedia.Play();
+            hero = new Hero(550, 620, 5, 3, 55, 75);
+
+            if (round == 10)
+            {
+                bossMedia.Play();
+            }
 
             gameState = "running";
 
@@ -171,22 +165,18 @@ namespace galaga
             heart3.Visible = true;
 
             score = 0;
-            ///playerHealth = 3; 
-            round = 10;
+            round = 1;
 
             bossHealth = 100;
             bossHealthbar.Width = 500;
 
-            ////hero.X = 526;
-            ////hero.Y = 600;
+            boss = new Boss(300, 0, 8, 100, 550, 300);
 
-            roundLabel.Text = "Round: 1";
+            roundLabel.Text = $"Round: {round}";
             timeLabel.Text = "Time left: 30";
             scoreLabel.Text = "0";
 
             timeClock = 30;
-
-           
         }
 
         private void bossMedia_MediaEnded(object sender, EventArgs e)
@@ -194,16 +184,27 @@ namespace galaga
             bossMedia.Stop();
             bossMedia.Play();
         }
+        public static void ExtractScores()
+        {
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+            // current info is not included in forecast file so we need to use this file to get it
+            XmlReader reader = XmlReader.Create("Resources/scoreFile.xml");
+
+
+            reader.ReadToFollowing("leaderboard");
+            //highscores[0].score = reader.GetAttribute("score");
+
+
+        }
+        private void gameScreen_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.A:
-                    ADown = true;
+                    aDown = true;
                     break;
                 case Keys.D:
-                    DDown = true;
+                    dDown = true;
                     break;
 
                 //shooting keys
@@ -226,16 +227,15 @@ namespace galaga
                     break;
             }
         }
-
-        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        private void gameScreen_KeyUp(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.A:
-                    ADown = false;
+                    aDown = false;
                     break;
                 case Keys.D:
-                    DDown = false;
+                    dDown = false;
                     break;
 
                 //shooting key
@@ -244,7 +244,6 @@ namespace galaga
                     break;
             }
         }
-
         private void gameEngine_Tick(object sender, EventArgs e)
         {
             //Move hero
@@ -280,11 +279,14 @@ namespace galaga
             //create hearts
 
             randValue = randGen.Next(0, 201);
-            for (int i = 0; i < 1; i++)
+            if (randValue == 1)
             {
-                hearts newHearts = new hearts(randGen.Next(0, this.Width - 10), 0, 10, 4);
-                hearts.Add(newHearts);
+                for (int i = 0; i < 1; i++)
+                {
+                    hearts newHearts = new hearts(randGen.Next(0, this.Width - 10), 0, 10, 4);
+                    hearts.Add(newHearts);
 
+                }
             }
             #endregion
 
@@ -313,11 +315,6 @@ namespace galaga
             foreach (playerLaser p in pLasers)
             {
                 p.Move(this.Width, this.Height);
-                ////find the new postion of y based on speed 
-                //int y = playerLaser[i].Y - laserSpeed;
-
-                ////replace the rectangle in the list with updated one using new y 
-                //playerLaser[i] = new Rectangle(playerLaser[i].X, y, playerLaserXSize, playerLaserYSize);
             }
 
             //Check is laser touches top of the form and remove if it is
@@ -337,14 +334,12 @@ namespace galaga
                 {
                     if (pLasers[i].Collision(soldiers[j]))
                     {
-                        soldierHealth[j] -= 10;
+                        soldiers[j].Health -= 10;
                         pLasers.RemoveAt(i);
 
-                        if (soldierHealth[j] <= 0)
+                        if (soldiers[j].Health <= 0)
                         {
                             soldiers.RemoveAt(j);
-                            soldierHealth.RemoveAt(j);
-                            soldierSpeeds.RemoveAt(j);
 
                             score += 100;
 
@@ -361,14 +356,12 @@ namespace galaga
                 {
                     if (pLasers[i].Collision(bombers[j]))
                     {
-                        bomberHealth[j] -= 10;
-                        //playerLaser.RemoveAt(i);
+                        bombers[j].Health -= 10;
+                        pLasers.RemoveAt(i);
 
-                        if (bomberHealth[j] <= 0)
+                        if (bombers[j].Health <= 0)
                         {
                             bombers.RemoveAt(j);
-                            bomberHealth.RemoveAt(j);
-                            bomberSpeeds.RemoveAt(j);
 
                             score += 50;
 
@@ -385,14 +378,12 @@ namespace galaga
                 {
                     if (pLasers[i].Collision(chasers[j]))
                     {
-                        chaserHealth[j] -= 10;
-                        //playerLaser.RemoveAt(i);
+                        chasers[j].Health -= 10;
+                        pLasers.RemoveAt(i);
 
-                        if (chaserHealth[j] <= 0)
+                        if (chasers[j].Health <= 0)
                         {
                             chasers.RemoveAt(j);
-                            chaserHealth.RemoveAt(j);
-                            chaserSpeeds.RemoveAt(j);
 
                             score += 50;
 
@@ -422,6 +413,15 @@ namespace galaga
                 //replace the rectangle in the list with updated one using new y 
                 movingBackgrounds[i] = new Rectangle(movingBackgrounds[i].X, y, backgroundXSize, backgroundYSize);
             }
+
+            //remove background if y is > 700
+            for (int i = 0; i < movingBackgrounds.Count(); i++)
+            {
+                if (movingBackgrounds[i].Y > 715)
+                {
+                    movingBackgrounds.RemoveAt(i);
+                }
+            }
             #endregion
 
             //rounds
@@ -430,8 +430,6 @@ namespace galaga
 
             if (timeClockCounter == 30)
             {
-
-
                 timeClock -= 1;
                 timeClockCounter = 0;
                 timeLabel.Text = $"Time left: {timeClock}";
@@ -461,7 +459,7 @@ namespace galaga
                     roundLabel.Text = $"Round: {round}";
                 }
             }
-            #endregion
+        #endregion
 
             //enemy spawning
             #region Enemy Spawning
@@ -472,18 +470,13 @@ namespace galaga
                 {
                     S.Move(this.Width, this.Height);
                 }
-                ////find the new postion of x based on speed 
-                //int soldierX = soldiers[i].X + soldierSpeeds[i];
-
-                ////replace the rectangle in the list with updated one using new y 
-                //soldiers[i] = new Rectangle(soldierX, soldiers[i].Y, soldierXSize, soldierYSize);
 
                 //bounce enemy back the other direction if they hit the edge of form
                 for (int i = 0; i < soldiers.Count; i++)
                 {
-                    if (soldiers[i].X > 800 - soldierXSize)
+                    if (soldiers[i].X > 1017 - soldierXSize)
                     {
-                        soldierSpeeds[i] *= -1;
+                        soldiers[i].Speed *= -1;
 
                         temp = soldiers[i].Y + 45;
                         soldierEnemy newSoldiers = new soldierEnemy(soldiers[i].X, temp, soldierXSize, soldierYSize, 3, 20);
@@ -491,7 +484,7 @@ namespace galaga
                     }
                     else if (soldiers[i].X < 0)
                     {
-                        soldierSpeeds[i] *= -1;
+                        soldiers[i].Speed *= -1;
 
                         temp = soldiers[i].Y + 45;
                         soldierEnemy newsoldiers = new soldierEnemy(soldiers[i].X, temp, soldierXSize, soldierYSize, 3, 20);
@@ -522,8 +515,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - soldierXSize * 2);
                             soldierEnemy newsoldiers = new soldierEnemy(x, 10, soldierXSize, soldierYSize, 3, 20);
                             soldiers.Add(newsoldiers);
-                            //soldierHealth.Add(20);
-                            //soldierSpeeds.Add(3);
                         }
 
                     }
@@ -535,8 +526,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - bomberXSize * 2);
                             bomberEnemy newbombers = new bomberEnemy(x, 10, bomberXSize, bomberYSize, 5, 10);
                             bombers.Add(newbombers);
-                            //bomberHealth.Add(10);
-                            //bomberSpeeds.Add(5);
                         }
                     }
 
@@ -547,8 +536,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - chaserXSize * 2);
                             chaserEnemy newChaserEnemy = new chaserEnemy(x, 10, chaserXSize, chaserYSize, 3, 10);
                             chasers.Add(newChaserEnemy);
-                            //chaserHealth.Add(10);
-                            //chaserSpeeds.Add(3);
                         }
                     }
                 }
@@ -562,8 +549,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - soldierXSize * 2);
                             soldierEnemy newsoldiers = new soldierEnemy(x, 10, soldierXSize, soldierYSize, 3, 20);
                             soldiers.Add(newsoldiers);
-                            //soldierHealth.Add(20);
-                            //soldierSpeeds.Add(3);
                         }
                     }
 
@@ -574,8 +559,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - bomberXSize * 2);
                             bomberEnemy newbombers = new bomberEnemy(x, 10, bomberXSize, bomberYSize, 5, 10);
                             bombers.Add(newbombers);
-                            bomberHealth.Add(10);
-                            bomberSpeeds.Add(5);
                         }
                     }
 
@@ -586,8 +569,6 @@ namespace galaga
                             int x = randGen.Next(10, this.Width - chaserXSize * 2);
                             chaserEnemy newChaserEnemy = new chaserEnemy(x, 10, chaserXSize, chaserYSize, 3, 10);
                             chasers.Add(newChaserEnemy);
-                            chaserHealth.Add(10);
-                            chaserSpeeds.Add(3);
                         }
                     }
                 }
@@ -598,8 +579,6 @@ namespace galaga
                     if (soldiers[i].Y > this.Height - soldiers[i].YSize)
                     {
                         soldiers.RemoveAt(i);
-                        soldierSpeeds.RemoveAt(i);
-                        soldierHealth.RemoveAt(i);
                     }
                 }
 
@@ -609,8 +588,6 @@ namespace galaga
                     if (bombers[i].Y > this.Height - bombers[i].YSize)
                     {
                         bombers.RemoveAt(i);
-                        bomberSpeeds.RemoveAt(i);
-                        bomberHealth.RemoveAt(i);
                     }
                 }
 
@@ -620,8 +597,6 @@ namespace galaga
                     if (chasers[i].Y > this.Height - chasers[i].YSize)
                     {
                         chasers.RemoveAt(i);
-                        chaserSpeeds.RemoveAt(i);
-                        chaserHealth.RemoveAt(i);
                     }
                 }
             }
@@ -723,7 +698,7 @@ namespace galaga
             {
                 for (int i = 0; i < soldiers.Count(); i++)
                 {
-                    soldierLaser newSoldierLaser = new soldierLaser(soldiers[i].X + 18, soldiers[i].Y + soldiers[i].Y, soldierLaserXSize, soldierLaserYSize, 7);
+                    soldierLaser newSoldierLaser = new soldierLaser(soldiers[i].X + 18, soldiers[i].Y + soldiers[i].Y, 8, 15, 7);
                     sLasers.Add(newSoldierLaser);
                 }
                 soldierLaserCounter = 0;
@@ -732,17 +707,15 @@ namespace galaga
             foreach (soldierLaser s in sLasers)
             {
                 s.Move(this.Width, this.Height);
-                //find the new postion of y based on speed 
-                //int y = sLasers[j].y + soldierLaserSpeed;
-
-                ////replace the rectangle in the list with updated one using new y 
-                //sLasers[j] = new Rectangle(sLasers[j].x, y, soldierLaserXSize, soldierLaserYSize);
             }
 
             //remove soldierLaser if it touches the bottom of the form
             for (int i = 0; i < sLasers.Count(); i++)
             {
-                sLasers.RemoveAt(i);
+                if (sLasers[i].y >= 800)
+                {
+                    sLasers.RemoveAt(i);
+                }
             }
 
             //check if laser touches player
@@ -782,8 +755,8 @@ namespace galaga
                 bossMedia.Stop();
 
                 shiftDown = false;
-                ADown = false;
-                DDown = false;
+                aDown = false;
+                dDown = false;
 
                 roundLabel.Visible = false;
                 timeLabel.Visible = false;
@@ -826,7 +799,6 @@ namespace galaga
                 //healthbar
                 timeClock = 1000000000;
                 timeLabel.Text = $"Time left: ---";
-                boss = new Boss(1, 1, 1, 1, 1, 1);
                 if (boss.y >= -300)
                 {
                     boss.y += bossSpeed;
@@ -969,146 +941,145 @@ namespace galaga
             }
             #endregion
             #endregion
+
             Refresh();
         }
-
-        private void Form1_Paint(object sender, PaintEventArgs e)
+        private void gameScreen_Paint(object sender, PaintEventArgs e)
         {
-            //title
-            if (gameState == "waiting")
             {
-                
-
-                timeLabel.Visible = false;
-                roundLabel.Visible = false;
-                scoreLabel.Visible = false;
-
-                heart1.Visible = false;
-                heart2.Visible = false;
-                heart3.Visible = false;
-            }
-
-            else if (gameState == "running")
-            {
-                //draw background
-                for (int i = 0; i < movingBackgrounds.Count; i++)
+                //title
+                if (gameState == "waiting")
                 {
-                    e.Graphics.DrawImage(background, movingBackgrounds[i]);
+                    timeLabel.Visible = false;
+                    roundLabel.Visible = false;
+                    scoreLabel.Visible = false;
+
+                    heart1.Visible = false;
+                    heart2.Visible = false;
+                    heart3.Visible = false;
                 }
 
-                //draw player
-                if (fireAnimation < 5 && fireAnimation > 0)
+                else if (gameState == "running")
                 {
-                    e.Graphics.DrawImage(playerImage1, hero.x, hero.y);
-                }
-
-                if (fireAnimation < 10 && fireAnimation > 4)
-                {
-                    e.Graphics.DrawImage(playerImage2, hero.x, hero.y);
-
-                }
-
-                if (fireAnimation < 15 && fireAnimation > 9)
-                {
-                    e.Graphics.DrawImage(playerImage3, hero.x, hero.y);
-                }
-
-                //draw hearts
-                for (int i = 0; i < hearts.Count; i++)
-                {
-                    e.Graphics.DrawImage(resizeHeart, hearts[i].x, hearts[i].y);
-                }
-
-                //draw boss
-                if (bossHealth > 0)
-                {
-                    e.Graphics.DrawImage(bossImage1, boss.x, boss.y);
-                }
-
-                //boss rockets
-                for (int i = 0; i < leftBossRocket.Count; i++)
-                {
-                    e.Graphics.DrawImage(bossRocket1, leftBossRocket[i].x, leftBossRocket[i].y);
-                }
-
-                for (int i = 0; i < rightBossRocket.Count; i++)
-                {
-                    e.Graphics.DrawImage(bossRocket1, rightBossRocket[i].x, rightBossRocket[i].y);
-                }
-
-                //boss laser
-                for (int i = 0; i < rightBossLaser.Count; i++)
-                {
-                    if (laserOn == true)
+                    //draw background
+                    for (int i = 0; i < movingBackgrounds.Count; i++)
                     {
-                        e.Graphics.FillRectangle(redBrush, rightBossLaser[i].x, rightBossLaser[i].y, rightBossLaser[i].xSize, rightBossLaser[i].ySize);
+                        e.Graphics.DrawImage(background, movingBackgrounds[i]);
+                    }
+
+                    //draw player
+                    if (fireAnimation < 5 && fireAnimation > 0)
+                    {
+                        e.Graphics.DrawImage(playerImage1, hero.x, hero.y, hero.width, hero.height);
+                    }
+
+                    if (fireAnimation < 10 && fireAnimation > 4)
+                    {
+                        e.Graphics.DrawImage(playerImage2, hero.x, hero.y, hero.width, hero.height);
+                    }
+
+                    if (fireAnimation < 15 && fireAnimation > 9)
+                    {
+                        e.Graphics.DrawImage(playerImage3, hero.x, hero.y, hero.width, hero.height);
+                    }
+
+                    //draw hearts
+                    for (int i = 0; i < hearts.Count; i++)
+                    {
+                        e.Graphics.DrawImage(resizeHeart, hearts[i].x, hearts[i].y);
+                    }
+
+                    
+
+                    //boss rockets
+                    for (int i = 0; i < leftBossRocket.Count; i++)
+                    {
+                        e.Graphics.DrawImage(bossRocket1, leftBossRocket[i].x, leftBossRocket[i].y);
+                    }
+
+                    for (int i = 0; i < rightBossRocket.Count; i++)
+                    {
+                        e.Graphics.DrawImage(bossRocket1, rightBossRocket[i].x, rightBossRocket[i].y);
+                    }
+
+                    //boss laser
+                    for (int i = 0; i < rightBossLaser.Count; i++)
+                    {
+                        if (laserOn == true)
+                        {
+                            e.Graphics.FillRectangle(redBrush, rightBossLaser[i].x, rightBossLaser[i].y, rightBossLaser[i].xSize, rightBossLaser[i].ySize);
+                        }
+                    }
+
+                    //left boss laser
+                    for (int i = 0; i < leftBossLaser.Count; i++)
+                    {
+                        if (laserOn == true)
+                        {
+                            e.Graphics.FillRectangle(redBrush, leftBossLaser[i].x, leftBossLaser[i].y, leftBossLaser[i].xSize, leftBossLaser[i].ySize);
+                        }
+                    }
+
+                    ///draw lasers
+                    //player lasers
+                    for (int i = 0; i < pLasers.Count; i++)
+                    {
+                        e.Graphics.FillRectangle(greenBrush, pLasers[i].x, pLasers[i].y, pLasers[i].xSize, pLasers[i].ySize);
+                    }
+
+                    //soldier lasers
+                    for (int i = 0; i < sLasers.Count; i++)
+                    {
+                        e.Graphics.FillRectangle(redBrush, sLasers[i].x, sLasers[i].y, sLasers[i].xSize, sLasers[i].ySize);
+                    }
+
+                    Font testFont = new Font("Arial", 12);
+
+                    //draw enemies
+                    for (int i = 0; i < soldiers.Count(); i++)
+                    {
+                        e.Graphics.DrawImage(soldierImage1, soldiers[i].X, soldiers[i].Y);
+                        //e.Graphics.DrawString(soldierHealth[i] + "", testFont, greenBrush, soldiers[i]);
+                    }
+
+                    for (int i = 0; i < bombers.Count(); i++)
+                    {
+                        e.Graphics.DrawImage(bomberImage1, bombers[i].X, bombers[i].Y);
+                        //e.Graphics.DrawString(bomberHealth[i] + "", testFont, greenBrush, bombers[i]);
+                    }
+
+                    for (int i = 0; i < chasers.Count(); i++)
+                    {
+                        e.Graphics.DrawImage(chaserImage1, chasers[i].X, chasers[i].Y);
+                        //e.Graphics.DrawString(bomberHealth[i] + "", testFont, greenBrush, bombers[i]);
                     }
                 }
 
-                //left boss laser
-                for (int i = 0; i < leftBossLaser.Count; i++)
+
+
+                else if (gameState == "over")
                 {
-                    if (laserOn == true)
+
+                    Form1.ChangeScreen(this, new gameOver());
+                }
+
+                else if (gameState == "win")
+                {
+                    Form1.ChangeScreen(this, new gameOver());
+                }
+
+                if (round == 10)
+                {
+                    //draw boss
+                    if (bossHealth > 0)
                     {
-                        e.Graphics.FillRectangle(redBrush, leftBossLaser[i].x, leftBossLaser[i].y, leftBossLaser[i].xSize, leftBossLaser[i].ySize);
+                        e.Graphics.DrawImage(bossImage1, boss.x, boss.y, boss.width, boss.height);
                     }
+
+                    e.Graphics.FillRectangle(redBrush, bossHealthbar);
+                    bossNameLabel.Visible = true;
                 }
-
-                ///draw lasers
-                //player lasers
-                for (int i = 0; i < pLasers.Count; i++)
-                {
-                    e.Graphics.FillRectangle(greenBrush, pLasers[i].x, pLasers[i].y, pLasers[i].xSize, pLasers[i].ySize);
-                }
-
-                //soldier lasers
-                for (int i = 0; i < sLasers.Count; i++)
-                {
-                    e.Graphics.FillRectangle(redBrush, sLasers[i].x, sLasers[i].y, sLasers[i].xSize, sLasers[i].ySize);
-                }
-
-                Font testFont = new Font("Arial", 12);
-
-                //draw enemies
-                for (int i = 0; i < soldiers.Count(); i++)
-                {
-                    e.Graphics.DrawImage(soldierImage1, soldiers[i].X, soldiers[i].Y);
-                    //e.Graphics.DrawString(soldierHealth[i] + "", testFont, greenBrush, soldiers[i]);
-                }
-
-                for (int i = 0; i < bombers.Count(); i++)
-                {
-                    e.Graphics.DrawImage(bomberImage1, bombers[i].X, bombers[i].Y);
-                    //e.Graphics.DrawString(bomberHealth[i] + "", testFont, greenBrush, bombers[i]);
-                }
-
-                for (int i = 0; i < chasers.Count(); i++)
-                {
-                    e.Graphics.DrawImage(chaserImage1, chasers[i].X, chasers[i].Y);
-                    //e.Graphics.DrawString(bomberHealth[i] + "", testFont, greenBrush, bombers[i]);
-                }
-            }
-
-
-
-            else if (gameState == "over")
-            {
-
-                Form1.ChangeScreen(this, new gameOver());
-            }
-
-            else if (gameState == "win")
-            {
-                Form1.ChangeScreen(this, new gameOver());
-            }
-
-            if (round == 10)
-            {
-                e.Graphics.FillRectangle(redBrush, bossHealthbar);
-                bossNameLabel.Visible = true;
             }
         }
     }
-
-
 }

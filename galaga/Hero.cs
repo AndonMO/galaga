@@ -9,7 +9,7 @@ namespace galaga
     public class Hero
     {
         public int x = 600, y = 700;
-        public int speed = 5;
+        public int speed = 10;
         public int fireAnimation = 1;
         public int health = 3;
         public int width = 55;

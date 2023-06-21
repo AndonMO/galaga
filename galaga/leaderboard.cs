@@ -15,6 +15,21 @@ namespace galaga
         public leaderboard()
         {
             InitializeComponent();
+
+            scoresLabel.Text = "";
+            gameScreen.highscores = gameScreen.highscores.OrderByDescending(x => x.score).ToList();
+
+            foreach (Highscore newScore in gameScreen.highscores)
+            {
+                
+                scoresLabel.Text += $"{newScore.score}\n";
+            }
+
+        }
+
+        private void backButton_Click(object sender, EventArgs e)
+        {
+            Form1.ChangeScreen(this, new menuScreen());
         }
     }
 }
